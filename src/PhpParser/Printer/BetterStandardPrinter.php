@@ -328,12 +328,24 @@ final class BetterStandardPrinter extends Standard implements NodePrinterInterfa
     }
     protected function pExpr_Ternary(Ternary $ternary) : string
     {
+        if ($ternary->if === null) {
+            $precedence = $this->precedenceMap[Ternary::class][0];
+            $associativity = -1;
+
+            $pExprTernary = $this->pPrec($ternary->cond, $precedence, $associativity, -1)
+                . ' ?: '
+                . $this->pPrec($ternary->else, $precedence, $associativity, 1);
+        }
+        else {
+             $pExprTernary = parent::pExpr_Ternary($ternary);
+        }
+
         $kind = $ternary->getAttribute(AttributeKey::KIND);
         if ($kind === 'wrapped_with_brackets') {
-            $pExprTernary = parent::pExpr_Ternary($ternary);
             return '(' . $pExprTernary . ')';
         }
-        return parent::pExpr_Ternary($ternary);
+
+        return $pExprTernary;
     }
     /**
      * Remove extra \\ from FQN use imports, for easier use in the code
